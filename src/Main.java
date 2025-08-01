@@ -88,6 +88,13 @@ public class Main {
     private static void assignVariables(){
         HashMap<String, HashMap<String, String>> content = getConfig();
 
+        if (content.isEmpty()) {
+            System.out.println("Unable to load config.");
+            return;
+        }
+
+        System.out.println(String.valueOf(content));
+
         recipient = content.get("Mail Info").get("Recipient");
         sender = content.get("Mail Info").get("Sender");
         password = content.get("Mail Info").get("MailPassword");
@@ -126,6 +133,12 @@ public class Main {
                     line = null;
                 }else if (line.charAt(0) != '[' && (line.charAt(0) != '#' && line.charAt(0) != ';')){
                     String[] keyValuePair = line.split("=");
+
+                    if (keyValuePair.length != 2){
+                        System.out.println("Looks like your config folder is not set up properly. Please ensure " +
+                                "that you have your email settings configured properly. Exiting...");
+                        System.exit(1);
+                    }
 
                     values.put(keyValuePair[0].strip(), keyValuePair[1].strip());
                 }

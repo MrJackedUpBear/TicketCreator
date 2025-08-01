@@ -1,0 +1,38 @@
+Adding Tickets:
+    - Description
+        * The tickets must be formatted in the TicketsToDo.txt file to add the tickets corresponding to the Possible ticket-types and possible status types.
+    - Possible Ticket-Types: 
+        1. "Password Reset"/"PR" *Defined for students that called in needing a password reset link sent to an email on file.*
+        2. "Duo Setup"/"DS" *Defined for students that called in needing to set up a new Duo device with a phone number on file.*
+        3. "E-Proxy Questions"/"EQ" *Defined for all users that have questions about E-Proxy.*
+        4. "A1 License"/"AL" *Defined for pending students that do not have an A1 license for some reason. They will be grace dated for so long so they can access their email.*
+        5. "Laptop Login Issues"/"LLI" *Defined for (typically employees) that come in due to having issues with logging in to a University laptop and are fixed by connecting to domain.*
+        6. "Username"/"U" *Defined for users that call in needing their username to log in with.*
+        7. "Account Still Syncing"/"AS" *Defined for users that called in due to not being able to log in after setting up a password.*
+        8. "Email Access"/"EA" *Defined for Disenrolled students that want access to their email.*
+    - Possible Status Types: 
+        1."Enrolled Student"/"ES"
+        2. "Student Employee"/"SE"
+        3. "Disenrolled Student"/"DS"
+        4. "General User"/"GU"
+        5. "Employee"/"E"
+        6. "Pending Student"/"PS"
+        7. "Pending Employee"/"PE"
+    - Name: The user's name
+    - Id: The user's PSU Id number.
+
+    Formatting:
+    The formatting must match the formatting and order of line 1.
+    i.e. Ticket-Type, Status, Name, Id would have a ticket formatted as "PR, SE, Jonathan Taylor, 0840152".
+    The order of the first line can be changed with no effect on the code, as long as it contains Ticket-Type, Status, Name, and Id. 
+
+    Scripts:
+    - Description
+        * Below are some scripts in case you do not want to update the TicketsToDo.txt file itself.
+    1. ./AddToFile *This will have you enter the ticket-type, user-type, name, and id. After doing so, it will add the inputs to the file and display the document.*
+    2. ./ClearFile *This will clear the file completely. No backups.*
+    3. ./CreateTickets *This starts the process for creating the tickets in the TicketsToDo.txt file. If there is nothing in the file, it will say nothing was needed to be done.*
+    4. ./ShowFile *Shows all items left on the TicketsToDo.txt file that need to be created.*
+    5. ./DeleteTicket *This will have you enter a ticket number to delete a specified ticket.*
+    6. ./UpdateTicket *This will have you enter a ticket number, the specified value to update, and a new value for updating a ticket.*
+    7. ./Help *This shows the current document displayed.*

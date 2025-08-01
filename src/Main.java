@@ -89,8 +89,8 @@ public class Main {
         HashMap<String, HashMap<String, String>> content = getConfig();
 
         if (content.isEmpty()) {
-            System.out.println("Unable to load config.");
-            return;
+            System.out.println("Unable to load config. Exiting...");
+            System.exit(1);
         }
 
         System.out.println(String.valueOf(content));

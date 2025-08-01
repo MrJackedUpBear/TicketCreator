@@ -12,31 +12,34 @@ import javax.mail.internet.*;
 
 public class Main {
 
+    //Tickets file
     private static final String filePath = "TicketsToDo.txt";
 
+    //Placeholder value for better error handling in the future. Currently just allows me to check if
+    //there were issues with sending the email. If there are, it won't clear the file.
     private static boolean issues = false;
 
     //Mail Info
+    //This info is better described in the config.ini file.
     private static String recipient = "";
     private static String sender = "";
     private static String password = "";
     private static String host = "";
     private static String port = "";
+
     private static final Properties properties = System.getProperties();
 
     //Subject and title info
     private static Map<String, String> subject = new HashMap<>();
-
     private static Map<String, String> ticketTypeAcronyms = new HashMap<>();
-
     private static Map<String, String> userTypeAcronyms = new HashMap<>();
-
     private static String[] validUserTypes;
     private static String[] validTicketTypes;
 
     public static void main(String[] args){
         assignVariables();
 
+        //Checks if the user did not enter a command and prompts them for a command if they didn't.
         if (args.length == 0){
             Scanner input = new Scanner(System.in);
 
@@ -85,6 +88,7 @@ public class Main {
         help();
     }
 
+    //Assigns the initialized variables at the top to values from the config.ini file.
     private static void assignVariables(){
         HashMap<String, HashMap<String, String>> content = getConfig();
 
@@ -93,8 +97,7 @@ public class Main {
             System.exit(1);
         }
 
-        System.out.println(String.valueOf(content));
-
+        //Loads the configs into the variables created above.
         recipient = content.get("Mail Info").get("Recipient");
         sender = content.get("Mail Info").get("Sender");
         password = content.get("Mail Info").get("MailPassword");
@@ -108,7 +111,9 @@ public class Main {
         validUserTypes = content.get("Valid User Types").get("csv").split(", ");
     }
 
+    //Gets the config file info.
     private static HashMap<String, HashMap<String, String>> getConfig(){
+        //config file.
         String file = "config.ini";
 
         HashMap<String, HashMap<String, String>> content = new HashMap<>();
@@ -120,6 +125,7 @@ public class Main {
             String category = "";
             HashMap<String, String> values = new HashMap<>();
 
+            //Reads through the file and adds everything to the content hashmap.
             while ((line = reader.readLine()) != null){
                 if (line.charAt(0) == '['){
                     if (!category.isEmpty()){
@@ -154,6 +160,7 @@ public class Main {
         return content;
     }
 
+    //Creates the tickets by emailing the specified recipient for each ticket on file.
     private static void createTickets(){
         ArrayList<HashMap<String, String>> content = readFile();
 
@@ -163,6 +170,7 @@ public class Main {
             return;
         }
 
+        //Loads through the TicketsToDo.txt file and checks if the input in the file is valid before sending the email.
         for (HashMap<String, String> c : content){
             String body = "";
 
@@ -234,6 +242,7 @@ public class Main {
         }
     }
 
+    //Updates info on TicketsToDo.txt file.
     private static void editTicket(){
         String ticketNumInput = "";
         int numLoc = 0;
@@ -394,6 +403,7 @@ public class Main {
         }
     }
 
+    //Adds info to TicketsToDo.txt file.
     private static void addToFile(){
         Scanner scanner = new Scanner(System.in);
 
@@ -584,6 +594,7 @@ public class Main {
         }
     }
 
+    //Shows the user the info from the TicketsToDo.txt file.
     private static void displayFile(){
         ArrayList<HashMap<String, String>> content = readFile();
 
@@ -620,6 +631,7 @@ public class Main {
         }
     }
 
+    //Reads from the TicketsToDo.txt file.
     private static ArrayList<HashMap<String, String>> readFile(){
         ArrayList<HashMap<String, String>> content = new ArrayList<>();
 
@@ -670,6 +682,7 @@ public class Main {
 
     private static void sendEmail(String title, String body){
         try{
+            //sets up the mail properties
             properties.put("mail.smtp.auth", true);
             properties.put("mail.smtp.starttls.enable", "true");
             properties.put("mail.smtp.host", host);
@@ -697,6 +710,7 @@ public class Main {
         }
     }
 
+    //Checks if the input is a ticket type.
     private static Boolean containsTicketType(String input){
         for (int i = 0; i < validTicketTypes.length; i++){
             if (validTicketTypes[i].equals(input)){
@@ -716,6 +730,7 @@ public class Main {
         return false;
     }
 
+    //Checks if the input is a user type.
     private static Boolean containsUserType(String input){
         for (int i = 0; i < validUserTypes.length; i++){
             if (validUserTypes[i].equals(input)){

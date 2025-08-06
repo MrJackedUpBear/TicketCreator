@@ -105,6 +105,7 @@ public class Main {
         port = content.get("Mail Info").get("MailPort");
 
         subject = content.get("Ticket Types");
+
         ticketTypeAcronyms = content.get("Ticket Type Acronyms");
         userTypeAcronyms = content.get("User Type Acronyms");
         validTicketTypes = content.get("Valid Ticket Types").get("csv").split(", ");
@@ -130,6 +131,7 @@ public class Main {
                 if (line.charAt(0) == '['){
                     if (!category.isEmpty()){
                         content.put(category, values);
+                        values = new HashMap<>();
                     }
 
                     category = line.substring(1, line.length() - 1);
@@ -170,76 +172,69 @@ public class Main {
             return;
         }
 
+        String ticketNum = "";
+        String input = "";
+        Scanner scanner = new Scanner(System.in);
+
+        while (input.isEmpty()) {
+            System.out.println("Options:");
+            System.out.println("1. Create all tickets on file");
+            System.out.println("2. Create specified ticket");
+            System.out.println("Please select an option (i.e. 1):");
+            input = scanner.nextLine().strip();
+
+            if (input.equals("2")){
+                while (ticketNum.isEmpty()){
+                    displayFile();
+                    System.out.println("Enter the ticket number for the ticket you would like to create.");
+                    ticketNum = scanner.nextLine();
+                    if (!containsTicket(ticketNum, content)){
+                        ticketNum = "";
+                    }
+                }
+            }else if (!input.equals("1")){
+                input = "";
+            }
+        }
+
         //Loads through the TicketsToDo.txt file and checks if the input in the file is valid before sending the email.
         for (HashMap<String, String> c : content){
             String body = "";
-
-            for (int i = 0; i < validTicketTypes.length; i++){
-                if (validTicketTypes[i].equals(c.get("Ticket-Type"))){
-                    body = subject.get(c.get("Ticket-Type"));
-                    i = validTicketTypes.length;
-                }else if (i == validTicketTypes.length - 1){
-                    String ticketType = ticketTypeAcronyms.get(c.get("Ticket-Type").toUpperCase());
-
-                    if (ticketType != null){
-                        body = subject.get(ticketType);
-                    }else{
-                        body = null;
-                    }
-                }
-            }
-
-            if (body == null){
-                System.out.println("Unknown Subject: " + c.get("Ticket-Type"));
-                issues = true;
-            }else if (c.get("Ticket-Type") == null || c.get("Status") == null || c.get("Name") == null || c.get("Id") == null){
-                System.out.println("Did not provide all parameters for type: " + body);
-                issues = true;
+            if (input.equals("1")){
+                createTicket(c);
             }else{
-                StringBuilder title = new StringBuilder();
-                for (int i = 0; i < validTicketTypes.length; i++){
-                    if (validTicketTypes[i].equalsIgnoreCase(c.get("Ticket-Type"))){
-                        title.append(validTicketTypes[i]);
-                        i = validTicketTypes.length;
-                    }else if (i == validTicketTypes.length - 1){
-                        title.append(ticketTypeAcronyms.get(c.get("Ticket-Type").toUpperCase()));
-                    }
-                }
-
-                title.append(" - ");
-                for (int i = 0; i < validUserTypes.length; i++){
-                    if (validUserTypes[i].equalsIgnoreCase(c.get("Status"))){
-                        assert title != null;
-                        title.append(validUserTypes[i]);
-                        i = validTicketTypes.length;
-                    }else if (i == validUserTypes.length - 1){
-                        String test = userTypeAcronyms.get(c.get("Status").toUpperCase());
-
-                        if (test == null){
-                            System.out.println("Unknown User Type: " + c.get("Status"));
-                            title = null;
-                        }else{
-                            assert title != null;
-                            title.append(test);
-                        }
-                    }
-                }
-
-                if (title != null ){
-                    title.append(" - ").append(c.get("Name")).append(" - ").append(c.get("Id"));
-                    sendEmail(title.toString(), body);
-                }else{
-                    issues = true;
+                if (c.get("Ticket-Number").equals(ticketNum)){
+                    createTicket(c);
                 }
             }
         }
+    }
 
-        if (!issues){
-            System.out.println("Clearing file...");
-            clearFile();
-        }else{
-            System.out.println("Seems there were issues with the document. Did not clear file.");
+    private static void createTicket(HashMap<String, String> c){
+        if (c.get("Ticket-Type") == null || c.get("Status") == null || c.get("Name") == null || c.get("Id") == null){
+            System.out.println("Did not provide all parameters for ticket: " + c.get("Ticket-Number"));
+            issues = true;
         }
+
+        String body = getBody(c);
+
+        String title = getTitle(c);
+
+        if (body == null){
+            System.out.println("Unknown Subject: " + c.get("Ticket-Type"));
+            issues = true;
+        }else if (title == null){
+            System.out.println("Unknown Title: " + c.get("Ticket-Number"));
+        }else{
+            boolean success = sendEmail(title, body);
+
+            if (success){
+                deleteFromFile(c.get("Ticket-Number"));
+            }else{
+                System.out.println("Seems there was an issue with creating ticket #" + c.get("Ticket-Number"));
+            }
+        }
+
     }
 
     //Updates info on TicketsToDo.txt file.
@@ -562,6 +557,12 @@ public class Main {
 
         int currentLine = 1;
 
+        deleteFromFile(ticketNumInput);
+    }
+
+    private static void deleteFromFile(String ticketNumInput){
+        int currentLine = 1;
+
         try{
             BufferedReader reader = new BufferedReader(new FileReader(filePath));
             BufferedWriter writer = new BufferedWriter(new FileWriter("temp.txt"));
@@ -587,7 +588,7 @@ public class Main {
             Path oldPath = Paths.get("temp.txt");
 
             Files.move(oldPath, file, StandardCopyOption.REPLACE_EXISTING);
-            System.out.println("Successfully deleted ticket.");
+            System.out.println("Successfully deleted ticket: " + ticketNumInput);
             displayFile();
         }catch (Exception e){
             System.out.println("Error: " + e.getMessage());
@@ -680,7 +681,7 @@ public class Main {
         }
     }
 
-    private static void sendEmail(String title, String body){
+    private static boolean sendEmail(String title, String body){
         try{
             //sets up the mail properties
             properties.put("mail.smtp.auth", true);
@@ -704,9 +705,11 @@ public class Main {
             System.out.println("Sending email...");
             Transport.send(message);
             System.out.println("Mail successfully sent");
+            return true;
         }catch(Exception e){
             System.out.println("Error for " + title + ": " + e.getMessage());
             issues = true;
+            return false;
         }
     }
 
@@ -730,6 +733,66 @@ public class Main {
         return false;
     }
 
+    private static String getBody(HashMap<String, String> c){
+        String body = "";
+
+        for (int i = 0; i < validTicketTypes.length; i++){
+            if (validTicketTypes[i].equals(c.get("Ticket-Type"))){
+                body = subject.get(c.get("Ticket-Type"));
+                i = validTicketTypes.length;
+            }else if (i == validTicketTypes.length - 1){
+                String ticketType = ticketTypeAcronyms.get(c.get("Ticket-Type").toUpperCase());
+
+                if (ticketType != null){
+                    body = subject.get(ticketType);
+                }else{
+                    body = null;
+                }
+            }
+        }
+        return body;
+    }
+
+    private static String getTitle(HashMap<String, String> c){
+        StringBuilder title = new StringBuilder();
+        for (int i = 0; i < validTicketTypes.length; i++){
+            if (validTicketTypes[i].equalsIgnoreCase(c.get("Ticket-Type"))){
+                title.append(validTicketTypes[i]);
+                i = validTicketTypes.length;
+            }else if (i == validTicketTypes.length - 1){
+                title.append(ticketTypeAcronyms.get(c.get("Ticket-Type").toUpperCase()));
+            }
+        }
+
+        title.append(" - ");
+        for (int i = 0; i < validUserTypes.length; i++){
+            if (validUserTypes[i].equalsIgnoreCase(c.get("Status"))){
+                assert title != null;
+                title.append(validUserTypes[i]);
+                i = validTicketTypes.length;
+            }else if (i == validUserTypes.length - 1){
+                String test = userTypeAcronyms.get(c.get("Status").toUpperCase());
+
+                if (test == null){
+                    System.out.println("Unknown User Type: " + c.get("Status"));
+                    title = null;
+                }else{
+                    assert title != null;
+                    title.append(test);
+                }
+            }
+        }
+
+        if (title != null ){
+            title.append(" - ").append(c.get("Name")).append(" - ").append(c.get("Id"));
+            return title.toString();
+        }else{
+            issues = true;
+        }
+
+        return null;
+    }
+
     //Checks if the input is a user type.
     private static Boolean containsUserType(String input){
         for (int i = 0; i < validUserTypes.length; i++){
@@ -749,4 +812,18 @@ public class Main {
 
         return false;
     }
+
+    private static Boolean containsTicket(String input, ArrayList<HashMap<String, String>> content){
+        int j = 0;
+        boolean foundNum = false;
+        for (HashMap<String, String> c : content){
+            if (c.get("Ticket-Number").equals(input)){
+                foundNum = true;
+                break;
+            }
+            j++;
+        }
+        return foundNum;
+    }
+
 }

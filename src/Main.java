@@ -148,7 +148,17 @@ public class Main {
                         System.exit(1);
                     }
 
-                    values.put(keyValuePair[0].strip(), keyValuePair[1].strip());
+                    if (keyValuePair[1].strip().charAt(0) == '{' && keyValuePair[1].strip().charAt(keyValuePair[1].strip().length() - 1) == '}'){
+                        String document = keyValuePair[1].strip();
+
+                        document = document.substring(1, document.length() - 1);
+
+                        String value = readDocument(document);
+
+                        values.put(keyValuePair[0].strip(), value);
+                    }else{
+                        values.put(keyValuePair[0].strip(), keyValuePair[1].strip());
+                    }
                 }
             }
 
@@ -160,6 +170,23 @@ public class Main {
         }
 
         return content;
+    }
+
+    private static String readDocument(String document){
+        String value = "";
+
+        try{
+            BufferedReader reader = new BufferedReader(new FileReader(document));
+
+            value = reader.readLine().strip();
+
+            reader.close();
+        }catch (Exception e){
+            System.out.println("Error: " + e.getMessage());
+            return "";
+        }
+
+        return value;
     }
 
     //Creates the tickets by emailing the specified recipient for each ticket on file.

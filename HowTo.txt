@@ -10,7 +10,7 @@ Adding Tickets:
         6. "Username"/"U" *Defined for users that call in needing their username to log in with.*
         7. "Account Still Syncing"/"AS" *Defined for users that called in due to not being able to log in after setting up a password.*
         8. "Email Access"/"EA" *Defined for Disenrolled students that want access to their email.*
-	9. "Account Lockout"/"AL" *Defined for student's accounts that are locked out.*
+	    9. "Account Lockout"/"AL" *Defined for student's accounts that are locked out.*
     - Possible Status Types: 
         1."Enrolled Student"/"ES"
         2. "Student Employee"/"SE"
@@ -19,7 +19,8 @@ Adding Tickets:
         5. "Employee"/"E"
         6. "Pending Student"/"PS"
         7. "Pending Employee"/"PE"
-	8. "Emeritus"/"EM"
+	    8. "Emeritus"/"EM"
+	    9. "Former Employee"/"FE"
     - Name: The user's name
     - Id: The user's PSU Id number.
 

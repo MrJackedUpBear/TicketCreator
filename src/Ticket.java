@@ -1,11 +1,12 @@
 public class Ticket{
-    private String ticketNumber;
-    private String ticketType;
-    private String status;
-    private String name;
-    private String ID;
+    private final String ticketNumber;
+    private final String ticketType;
+    private final String status;
+    private final String name;
+    private final String ID;
 
     public Ticket(){
+        ticketNumber = "";
         ticketType = "";
         status = "";
         name = "";

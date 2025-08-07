@@ -120,7 +120,7 @@ public class Main {
                     category = line.substring(1, line.length() - 1);
                 }
 
-                if (!(category.isEmpty() && (line.charAt(0) != '#' && line.charAt(0) != ';'))){
+                if (!category.isEmpty() && (line.charAt(0) != '#' && line.charAt(0) != ';' && line.charAt(0) != '[')){
                     String[] keyValuePair = line.split("=");
 
                     if (keyValuePair.length != 2){

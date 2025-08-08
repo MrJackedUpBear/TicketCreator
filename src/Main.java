@@ -7,20 +7,20 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
-import javax.mail.*;
-import javax.mail.internet.*;
 
 public class Main {
 
     //Tickets file
     private static final String filePath = "TicketsToDo.txt";
 
+    private static final Main main = new Main();
+
     static Config config = new Config();
 
-    private static final Properties properties = System.getProperties();
+    private static final ArrayList<Thread> threads = new ArrayList<>();
 
     public static void main(String[] args){
-        assignVariables();
+        main.assignVariables();
 
         //Checks if the user did not enter a command and prompts them for a command if they didn't.
         if (args.length == 0){
@@ -29,7 +29,7 @@ public class Main {
             String choice = "";
 
             while (choice.isEmpty()){
-                help();
+                main.help();
                 System.out.println("Choices:");
                 System.out.println("Create *To create all tickets on file.*");
                 System.out.println("Add *To add a ticket to the file.*");
@@ -47,19 +47,29 @@ public class Main {
         }
 
         if (args[0].equalsIgnoreCase("create")){
-            createTickets();
+            main.createTickets();
+
+            if (!threads.isEmpty()){
+                for (Thread thread : threads){
+                    try {
+                        thread.join();
+                    } catch (InterruptedException e) {
+                        System.out.println(e.getMessage());
+                    }
+                }
+            }
         }else if (args[0].equalsIgnoreCase("add")){
-            addToFile();
+            main.addToFile();
         }else if (args[0].equalsIgnoreCase("clear")){
-            clearFile();
+            main.clearFile();
         }else if (args[0].equalsIgnoreCase("show")){
-            displayFile();
+            main.displayFile();
         }else if (args[0].equalsIgnoreCase("delete")){
-            deleteTicket();
+            main.deleteTicket();
         }else if (args[0].equalsIgnoreCase("edit")){
-            editTicket();
+            main.editTicket();
         }else if (args[0].equalsIgnoreCase("help") || args[0].equalsIgnoreCase("h")){
-            help();
+            main.help();
             return;
         }
 
@@ -68,11 +78,11 @@ public class Main {
         } catch (InterruptedException e) {
             System.out.println("Error: " + e.getMessage());
         }
-        help();
+        main.help();
     }
 
     //Assigns the initialized variables at the top to values from the config.ini file.
-    private static void assignVariables(){
+    private void assignVariables(){
         HashMap<String, HashMap<String, String>> content = getConfig();
 
         if (content.isEmpty()) {
@@ -96,7 +106,7 @@ public class Main {
     }
 
     //Gets the config file info.
-    private static HashMap<String, HashMap<String, String>> getConfig(){
+    private HashMap<String, HashMap<String, String>> getConfig(){
         //config file.
         String file = "config.ini";
 
@@ -153,7 +163,7 @@ public class Main {
         return content;
     }
 
-    private static String readDocument(String document){
+    private String readDocument(String document){
         String value;
 
         try{
@@ -171,7 +181,7 @@ public class Main {
     }
 
     //Creates the tickets by emailing the specified recipient for each ticket on file.
-    private static void createTickets(){
+    private void createTickets(){
         ArrayList<Ticket> content = readFile();
 
         assert content != null;
@@ -217,8 +227,12 @@ public class Main {
         }
     }
 
+    public static Main getInstance(){
+        return main;
+    }
+
     //Creates an individual ticket given a hashmap.
-    private static void createTicket(Ticket c){
+    private void createTicket(Ticket c){
         if (c.getTicketType() == null || c.getStatus() == null || c.getName() == null || c.getID() == null){
             System.out.println("Did not provide all parameters for ticket: " + c.getTicketNumber());
         }
@@ -232,19 +246,16 @@ public class Main {
         }else if (title == null){
             System.out.println("Unknown Title: " + c.getTicketNumber());
         }else{
-            boolean success = sendEmail(title, body);
-
-            if (success){
-                deleteFromFile(c.getTicketNumber());
-            }else{
-                System.out.println("Seems there was an issue with creating ticket #" + c.getTicketNumber());
-            }
+            Runnable r = new Mail(config, c.getTicketNumber(), title, body);
+            Thread mail = new Thread(r);
+            mail.start();
+            threads.add(mail);
         }
 
     }
 
     //Updates info on TicketsToDo.txt file.
-    private static void editTicket(){
+    private void editTicket(){
         String ticketNumInput = "";
         int numLoc = 0;
 
@@ -405,7 +416,7 @@ public class Main {
     }
 
     //Adds info to TicketsToDo.txt file.
-    private static void addToFile(){
+    private void addToFile(){
         Scanner scanner = new Scanner(System.in);
 
         String ticketType = "";
@@ -499,7 +510,7 @@ public class Main {
         }
     }
 
-    private static void clearFile(){
+    private void clearFile(){
         try{
             BufferedWriter writer = new BufferedWriter(new FileWriter(filePath));
             writer.write("Ticket-Number, Ticket-Type, Status, Name, Id");
@@ -512,7 +523,7 @@ public class Main {
         }
     }
 
-    private static void deleteTicket(){
+    private void deleteTicket(){
         String ticketNumInput = "";
 
         ArrayList<Ticket> content = readFile();
@@ -564,7 +575,7 @@ public class Main {
         deleteFromFile(ticketNumInput);
     }
 
-    private static void deleteFromFile(String ticketNumInput){
+    void deleteFromFile(String ticketNumInput){
         int currentLine;
 
         try{
@@ -599,7 +610,7 @@ public class Main {
     }
 
     //Shows the user the info from the TicketsToDo.txt file.
-    private static void displayFile(){
+    private void displayFile(){
         ArrayList<Ticket> content = readFile();
 
         assert content != null;
@@ -615,7 +626,7 @@ public class Main {
         }
     }
 
-    private static void help(){
+    private void help(){
         for (int i = 0; i < 6; i++){
             System.out.println();
         }
@@ -636,7 +647,7 @@ public class Main {
     }
 
     //Reads from the TicketsToDo.txt file.
-    private static ArrayList<Ticket> readFile(){
+    private ArrayList<Ticket> readFile(){
         ArrayList<Ticket> content = new ArrayList<>();
         String ticketNumber = "", ticketType = "", status = "", name = "", ID = "";
 
@@ -684,39 +695,8 @@ public class Main {
         }
     }
 
-    private static boolean sendEmail(String title, String body){
-        try{
-            //sets up the mail properties
-            properties.put("mail.smtp.auth", true);
-            properties.put("mail.smtp.starttls.enable", "true");
-            properties.put("mail.smtp.host", config.getHost());
-            properties.put("mail.smtp.port", config.getPort());
-            properties.put("mail.smtp.ssl.trust", config.getHost());
-
-            Session session = Session.getDefaultInstance(properties, new Authenticator() {
-                @Override
-                protected PasswordAuthentication getPasswordAuthentication(){
-                    return new PasswordAuthentication(config.getSender(), config.getPassword());
-                }
-            });
-
-            MimeMessage message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(config.getSender()));
-            message.addRecipient(Message.RecipientType.TO, new InternetAddress(config.getRecipient()));
-            message.setSubject(title);
-            message.setText(body);
-            System.out.println("Sending email...");
-            Transport.send(message);
-            System.out.println("Mail successfully sent");
-            return true;
-        }catch(Exception e){
-            System.out.println("Error for " + title + ": " + e.getMessage());
-            return false;
-        }
-    }
-
     //Checks if the input is a ticket type.
-    private static Boolean containsTicketType(String input){
+    private Boolean containsTicketType(String input){
         for (int i = 0; i < config.getValidTicketTypes().length; i++){
             if (config.getValidTicketTypes()[i].equals(input)){
                 return true;
@@ -735,7 +715,7 @@ public class Main {
         return false;
     }
 
-    private static String getBody(Ticket c){
+    private String getBody(Ticket c){
         String body = "";
 
         for (int i = 0; i < config.getValidTicketTypes().length; i++){
@@ -755,7 +735,7 @@ public class Main {
         return body;
     }
 
-    private static String getTitle(Ticket c){
+    private String getTitle(Ticket c){
         StringBuilder title = new StringBuilder();
         for (int i = 0; i < config.getValidTicketTypes().length; i++){
             if (config.getValidTicketTypes()[i].equalsIgnoreCase(c.getTicketType())){
@@ -794,7 +774,7 @@ public class Main {
     }
 
     //Checks if the input is a user type.
-    private static Boolean containsUserType(String input){
+    private Boolean containsUserType(String input){
         for (int i = 0; i < config.getValidUserTypes().length; i++){
             if (config.getValidUserTypes()[i].equals(input)){
                 return true;
@@ -813,7 +793,7 @@ public class Main {
         return false;
     }
 
-    private static Boolean containsTicket(String input, ArrayList<Ticket> content){
+    private Boolean containsTicket(String input, ArrayList<Ticket> content){
         boolean foundNum = false;
         for (Ticket c : content){
             if (c.getTicketNumber().equals(input)){

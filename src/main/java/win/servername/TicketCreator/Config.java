@@ -1,3 +1,5 @@
+package win.servername.TicketCreator;
+
 import java.util.HashMap;
 
 public class Config{

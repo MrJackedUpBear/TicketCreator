@@ -1,3 +1,5 @@
+package win.servername.TicketCreator;
+
 public class Ticket{
     private final String ticketNumber;
     private final String ticketType;

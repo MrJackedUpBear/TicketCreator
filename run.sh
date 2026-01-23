@@ -1,2 +1,2 @@
 #!/bin/bash
-mvn exec:java -Dexec.mainClass="win.servername.TicketCreator.Main"
+mvn --quiet exec:java -Dexec.mainClass="win.servername.TicketCreator.Main"

@@ -1,1 +1,0 @@
-@javac -cp "lib/*" -d bin src/Main.java

@@ -21,6 +21,8 @@ public class Main {
 
     private static final ArrayList<Thread> threads = new ArrayList<>();
 
+    private static final List<String> HEADERS = List.of("Ticket-Number", "Ticket-Type", "Status", "Name", "Id");
+
     public static void main(String[] args){
         main.assignVariables();
 
@@ -375,35 +377,53 @@ public class Main {
         int currentLine = 0;
 
         try{
-            BufferedReader reader = new BufferedReader(new FileReader(filePath));
+            //BufferedReader reader = new BufferedReader(new FileReader(filePath));
             BufferedWriter writer = new BufferedWriter(new FileWriter("temp.txt"));
 
-            String line;
+            //String line;
             int i = 0;
-            while ((line = reader.readLine()) != null){
-                if (i != 0){
-                    writer.newLine();
-                    currentLine = line.charAt(0) - '0';
+            writer.write("Ticket-Number, Ticket-Type, Status, Name, Id");
+
+            for (Ticket ticket : content){
+                writer.newLine();
+
+                if (Integer.parseInt(ticket.getTicketNumber()) == Integer.parseInt(ticketNumInput)){
+                    ticket.updateSpecifiedValue(valueToUpdate, newValue);
                 }
 
-                if (Integer.parseInt(ticketNumInput) != currentLine){
-                    writer.write(line);
-                    currentLine++;
-                }else{
-                    String valueToWrite = "";
-
-                    String[] temp = line.split(content.get(numLoc).getSpecifiedValue(valueToUpdate) + ",");
-
-                    valueToWrite += temp[0];
-                    valueToWrite += newValue + ",";
-                    valueToWrite += temp[1];
-
-                    writer.write(valueToWrite);
-                }
-                i++;
+                writer.write(ticket.getTicketNumber());
+                writer.write(", " + ticket.getTicketType());
+                writer.write(", " + ticket.getStatus());
+                writer.write(", " + ticket.getName());
+                writer.write(", " + ticket.getID());
             }
 
-            reader.close();
+            //while ((line = reader.readLine()) != null){
+            //    if (i != 0){
+            //        writer.newLine();
+            //        if (i < content.size()){
+            //            currentLine = Integer.parseInt(content.get(i).getTicketNumber());
+            //        }
+            //    }
+//
+            //    if (Integer.parseInt(ticketNumInput) != currentLine){
+            //        writer.write(line);
+            //        currentLine++;
+            //    }else{
+            //        String valueToWrite = "";
+//
+            //        String[] temp = line.split(content.get(numLoc).getSpecifiedValue(valueToUpdate) + ",");
+//
+            //        valueToWrite += temp[0];
+            //        valueToWrite += newValue + ",";
+            //        valueToWrite += temp[1];
+//
+            //        writer.write(valueToWrite);
+            //    }
+           //     i++;
+            //}
+
+            //reader.close();
             writer.close();
 
             Path file = Paths.get(filePath);
@@ -483,22 +503,35 @@ public class Main {
         int ticketNum = 0;
 
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(filePath));
+            //BufferedReader reader = new BufferedReader(new FileReader(filePath));
+            ArrayList<Ticket> tickets = readFile();
             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
 
-            String line;
-            while ((line = reader.readLine()) != null){
-                if (!line.equals("Ticket-Number, Ticket-Type, Status, Name, Id")){
-                    ticketNum = line.charAt(0) - '0';
-                }
-                writer.write(line);
+            //String line;
+            writer.write("Ticket-Number, Ticket-Type, Status, Name, Id");
+            assert tickets != null;
+            for (Ticket ticket : tickets){
                 writer.newLine();
+                writer.write(ticket.getTicketNumber());
+                writer.write(", " + ticket.getTicketType());
+                writer.write(", " + ticket.getStatus());
+                writer.write(", " + ticket.getName());
+                writer.write(", " + ticket.getID());
+                ticketNum = Integer.parseInt(ticket.getTicketNumber());
             }
+            //while ((line = reader.readLine()) != null){
+            //    if (!line.equals("Ticket-Number, Ticket-Type, Status, Name, Id")){
+            //        ticketNum = line.charAt(0) - '0';
+            //    }
+            //    writer.write(line);
+            //    writer.newLine();
+            //}
 
             ticketNum++;
 
-            reader.close();
+            //reader.close();
 
+            writer.newLine();
             writer.write(ticketNum + ", " + ticketType + ", " + userType + ", " + name + ", " + id);
 
             writer.close();
@@ -581,23 +614,39 @@ public class Main {
         int currentLine;
 
         try{
-            BufferedReader reader = new BufferedReader(new FileReader(filePath));
+            //BufferedReader reader = new BufferedReader(new FileReader(filePath));
             BufferedWriter writer = new BufferedWriter(new FileWriter("temp.txt"));
+
+            ArrayList<Ticket> tickets = readFile();
 
             String line;
             int i = 0;
-            while ((line = reader.readLine()) != null){
-                currentLine = line.charAt(0) - '0';
-                if (Integer.parseInt(ticketNumInput) != currentLine){
-                    if (i != 0){
-                        writer.newLine();
-                    }
-                    writer.write(line);
+
+            writer.write("Ticket-Number, Ticket-Type, Status, Name, Id");
+            assert tickets != null;
+            for (Ticket ticket : tickets){
+                if (!ticket.getTicketNumber().equals(ticketNumInput)){
+                    writer.newLine();
+                    writer.write(ticket.getTicketNumber());
+                    writer.write(", " + ticket.getTicketType());
+                    writer.write(", " + ticket.getStatus());
+                    writer.write(", " + ticket.getName());
+                    writer.write(", " + ticket.getID());
                 }
-                i++;
             }
 
-            reader.close();
+            //while ((line = reader.readLine()) != null){
+            //    currentLine = line.charAt(0) - '0';
+           //     if (Integer.parseInt(ticketNumInput) != currentLine){
+            //        if (i != 0){
+            //            writer.newLine();
+            //        }
+            //        writer.write(line);
+           //     }
+            //    i++;
+            //}
+
+            //reader.close();
             writer.close();
 
             Path file = Paths.get(filePath);

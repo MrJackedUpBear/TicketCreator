@@ -2,10 +2,10 @@ package win.servername.TicketCreator;
 
 public class Ticket{
     private final String ticketNumber;
-    private final String ticketType;
-    private final String status;
-    private final String name;
-    private final String ID;
+    private String ticketType;
+    private String status;
+    private String name;
+    private String ID;
 
     public Ticket(){
         ticketNumber = "";
@@ -57,5 +57,17 @@ public class Ticket{
         }
 
         return val;
+    }
+
+    public void updateSpecifiedValue(String input, String newVal){
+        if (input.equalsIgnoreCase("Ticket-Type")){
+            ticketType = newVal;
+        }else if (input.equalsIgnoreCase("Status")){
+            status = newVal;
+        }else if (input.equalsIgnoreCase("Name")){
+            name = newVal;
+        }else if (input.equalsIgnoreCase("ID")){
+            ID = newVal;
+        }
     }
 }
